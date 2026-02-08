@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>熊冰O - 店長管理系統</title>
+    <style>
+        body { font-family: sans-serif; background: #0f172a; color: white; padding: 20px; }
+        .box { background: #1e293b; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #334155; }
+        table { width: 100%; border-collapse: collapse; background: white; color: #333; margin-top: 15px; }
+        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+        input { padding: 8px; border-radius: 5px; border: none; margin-bottom: 10px; width: 200px; display: block; }
+        button { cursor: pointer; padding: 10px 20px; border-radius: 8px; border: none; background: #0077b6; color: white; font-weight: bold; }
+        .product-item { display: flex; align-items: center; justify-content: space-between; background: #334155; padding: 10px; margin-bottom: 5px; border-radius: 8px; }
+        .item-img { width: 50px; height: 50px; border-radius: 5px; object-fit: cover; margin-right: 15px; }
+    </style>
+</head>
+<body>
+    <h1>🛠 熊冰O 管理系統</h1>
+    
+    <div class="box">
+        <h3>✨ 上架新商品</h3>
+        <label>商品名稱：</label>
+        <input type="text" id="p-name" placeholder="例如：手工水餃">
+        <label>價格：</label>
+        <input type="number" id="p-price" placeholder="例如：180">
+        <label>照片連結 (網址)：</label>
+        <input type="text" id="p-img" placeholder="請貼上圖片網址">
+        <button onclick="addProduct()">確認上架商品</button>
+    </div>
+
+    <div class="box">
+        <h3>🧊 現有架上商品 (可下架)</h3>
+        <div id="current-list"></div>
+    </div>
+
+    <div class="box">
+        <h3>📥 雲端訂單</h3>
+        <button onclick="fetchOrders()" style="background:#22c55e;">🔄 重新整理訂單</button>
+        <table id="order-table">
+            <thead><tr><th>時間</th><th>顧客</th><th>電話</th><th>品項</th><th>總計</th></tr></thead>
+            <tbody id="order-list"></tbody>
+        </table>
+    </div>
+
+<script>
+    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzfHhadFwFzg5P005DzlftVNpPFg4HqOxfy3p0ajZwEWAWP_XTinFypj-CFHkFBKJ1E/exec";
+    let products = JSON.parse(localStorage.getItem('bear_p_list')) || [];
+
+    function renderInventory() {
+        const list = document.getElementById('current-list');
+        list.innerHTML = products.map((p, index) => `
+            <div class="product-item">
+                <div style="display:flex; align-items:center;">
+                    <img src="${p.img}" class="item-img" onerror="this.src='https://via.placeholder.com/50'">
+                    <span>${p.name} - $${p.price}</span>
+                </div>
+                <button onclick="removeProduct(${index})" style="background:#ef4444; padding:5px 10px;">下架</button>
+            </div>
+        `).join('');
+        localStorage.setItem('bear_p_list', JSON.stringify(products));
+    }
+
+    function addProduct() {
+        const n = document.getElementById('p-name').value;
+        const p = document.getElementById('p-price').value;
+        const i = document.getElementById('p-img').value || 'https://via.placeholder.com/200?text=無照片';
+        if(n && p) {
+            products.push({ id: Date.now(), name: n, price: parseInt(p), img: i });
+            renderInventory();
+            alert("已上架！");
+            document.getElementById('p-name').value=''; 
+            document.getElementById('p-price').value='';
+            document.getElementById('p-img').value='';
+        }
+    }
+
+    function removeProduct(idx) {
+        if(confirm("要下架這個商品嗎？")) {
+            products.splice(idx, 1);
+            renderInventory();
+        }
+    }
+
+    async function fetchOrders() {
+        const list = document.getElementById('order-list');
+        list.innerHTML = "讀取中...";
+        try {
+            const res = await fetch(GOOGLE_URL);
+            const data = await res.json();
+            list.innerHTML = data.reverse().map(o => `<tr><td>${o.time}</td><td>${o.name}</td><td><a href="tel:${o.phone}">${o.phone}</a></td><td>${o.items}</td><td>$${o.total}</td></tr>`).join('');
+        } catch(e) { list.innerHTML = "失敗，請檢查網址"; }
+    }
+
+    renderInventory();
+</script>
+</body>
+</html>
