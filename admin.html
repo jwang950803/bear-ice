@@ -3,49 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>熊冰O - 店長控制台</title>
+    <title>熊冰O - 店長中控台</title>
     <style>
-        body { font-family: sans-serif; background: #f8fafc; padding: 20px; }
-        .box { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 600px; margin: 0 auto; }
-        .btn { background: #0c4a6e; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; cursor: pointer; margin-top: 10px; font-weight: bold; }
-        .status-on { color: #22c55e; font-weight: bold; }
-        .status-off { color: #ef4444; font-weight: bold; }
+        body { font-family: 'PingFang TC', sans-serif; background: #f8fafc; padding: 20px; color: #334155; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        h2 { margin-top: 0; color: #0f172a; border-left: 5px solid #ef4444; padding-left: 10px; }
+        
+        /* 開關樣式 */
+        .switch-box { display: flex; justify-content: space-between; align-items: center; background: #f1f5f9; padding: 15px; border-radius: 10px; }
+        .toggle-btn {
+            background: #cbd5e1; color: white; border: none; padding: 10px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s;
+        }
+        .toggle-btn.open { background: #22c55e; }
+        .toggle-btn.closed { background: #ef4444; }
+
+        /* 表單 */
+        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; }
+        .action-btn { width: 100%; background: #0f172a; color: white; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
+        
+        /* 列表 */
+        .p-list { margin-top: 15px; border-top: 1px solid #e2e8f0; }
+        .p-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f1f5f9; align-items: center; }
+        .tag { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; margin-right: 5px; background: #e0f2fe; color: #0284c7; }
+        .del-btn { color: #ef4444; background: none; border: none; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="box">
-    <h2>🐻 熊冰O 管理後台</h2>
-    
-    <div style="background:#f1f5f9; padding:15px; border-radius:10px; margin-bottom:20px;">
-        <div>營業狀態：<span id="st-text">載入中...</span></div>
-        <button class="btn" id="toggle-btn" onclick="toggle()">切換營業狀態</button>
+<div class="container">
+    <div class="card">
+        <h2>🟢 營業狀態控制</h2>
+        <div class="switch-box">
+            <span id="status-text">讀取中...</span>
+            <button id="status-btn" class="toggle-btn" onclick="toggleStatus()">切換</button>
+        </div>
+        <p style="font-size:0.8rem; color:#64748b;">* 切換後，請重新整理顧客頁面查看效果。</p>
     </div>
 
-    <div style="border-top:1px solid #eee; padding-top:20px;">
-        <h3>📋 訂單紀錄管理</h3>
-        <p style="font-size:0.8rem; color:#64748b;">最新的顧客預約會即時存入您的 Google 試算表。</p>
-        <button class="btn" style="background:#107c10;" onclick="window.open('https://docs.google.com/spreadsheets/d/你的試算表ID')">📗 開啟 Google 訂單試算表</button>
+    <div class="card">
+        <h2>📋 訂單管理</h2>
+        <p>所有顧客訂單皆已同步至 Google 試算表。</p>
+        <a href="https://docs.google.com/spreadsheets/d/你的試算表ID" target="_blank" class="action-btn" style="background:#15803d; text-align:center; display:block; text-decoration:none;">
+            開啟 Google 訂單表格
+        </a>
+    </div>
+
+    <div class="card">
+        <h2>📦 商品上架管理</h2>
+        
+        <label>選擇分區</label>
+        <select id="new-cat">
+            <option value="pot">🍢 火鍋料</option>
+            <option value="fry">🍟 炸物</option>
+            <option value="meat">🥩 肉類/海鮮</option>
+            <option value="main">🍜 麵食</option>
+        </select>
+
+        <label>商品名稱</label>
+        <input type="text" id="new-name" placeholder="例如：手工大水餃">
+
+        <label>價格</label>
+        <input type="number" id="new-price" placeholder="100">
+
+        <button class="action-btn" onclick="addProduct()">確認上架</button>
+
+        <div class="p-list" id="p-list-view"></div>
     </div>
 </div>
 
 <script>
-    let isOpen = localStorage.getItem('bear_store_open') !== 'false';
+    // 預設資料 (與 index.html 保持一致，作為初始值)
+    const defaultData = {
+        pot: [ {n:"綜合火鍋料(秤斤)", p:50}, {n:"麻糬蛋黃芋丸", p:70}, {n:"綜合燒賣", p:100}, {n:"玉米布丁酥", p:50} ],
+        fry: [ {n:"披薩(一個)", p:20}, {n:"檸檬雞柳", p:50}, {n:"原味雞米花", p:50}, {n:"雞塊", p:50}, {n:"蜜糖小肉豆", p:50}, {n:"黃金脆薯", p:50}, {n:"馬鈴薯條", p:50}, {n:"港式蘿蔔糕", p:50} ],
+        meat: [ {n:"鯛魚片", p:60}, {n:"檸檬蝴蝶腿", p:100}, {n:"九層塔雞腿排", p:100}, {n:"無骨牛小排", p:100}, {n:"醃漬雞腿排", p:100}, {n:"鹹豬肉", p:100}, {n:"黃金翅包飯", p:100}, {n:"雞肉捲", p:100} ],
+        main: [ {n:"蒸煮麵", p:10}, {n:"科學麵(2包)", p:15}, {n:"鍋燒麵(3包)", p:20}, {n:"手工蔥抓餅", p:100}, {n:"烏龍麵", p:100} ]
+    };
 
-    function update() {
-        const txt = document.getElementById('st-text');
-        txt.innerText = isOpen ? "🟢 營業中" : "🔴 公休中";
-        txt.className = isOpen ? "status-on" : "status-off";
+    let db = JSON.parse(localStorage.getItem('bear_products_db')) || defaultData;
+    let isOpen = localStorage.getItem('bear_store_status') !== 'closed';
+
+    // 初始化 UI
+    renderStatus();
+    renderList();
+
+    function renderStatus() {
+        const btn = document.getElementById('status-btn');
+        const txt = document.getElementById('status-text');
+        if (isOpen) {
+            btn.innerText = "營業中";
+            btn.className = "toggle-btn open";
+            txt.innerText = "目前狀態：🟢 正常接單";
+        } else {
+            btn.innerText = "已公休";
+            btn.className = "toggle-btn closed";
+            txt.innerText = "目前狀態：🔴 暫停接單";
+        }
     }
 
-    function toggle() {
+    function toggleStatus() {
         isOpen = !isOpen;
-        localStorage.setItem('bear_store_open', isOpen);
-        update();
-        alert("已更新營業狀態，請記得同步告知顧客！");
+        localStorage.setItem('bear_store_status', isOpen ? 'open' : 'closed');
+        renderStatus();
     }
 
-    update();
+    function addProduct() {
+        const cat = document.getElementById('new-cat').value;
+        const name = document.getElementById('new-name').value;
+        const price = document.getElementById('new-price').value;
+
+        if (!name || !price) return alert("請填寫完整資訊");
+
+        // 確保該分類存在
+        if (!db[cat]) db[cat] = [];
+
+        db[cat].push({ n: name, p: parseInt(price) });
+        saveDb();
+        
+        document.getElementById('new-name').value = '';
+        document.getElementById('new-price').value = '';
+        renderList();
+        alert("上架成功！");
+    }
+
+    function deleteProduct(cat, index) {
+        if(confirm("確定要下架此商品嗎？")) {
+            db[cat].splice(index, 1);
+            saveDb();
+            renderList();
+        }
+    }
+
+    function saveDb() {
+        localStorage.setItem('bear_products_db', JSON.stringify(db));
+    }
+
+    function renderList() {
+        const container = document.getElementById('p-list-view');
+        const catNames = { pot: "火鍋", fry: "炸物", meat: "肉類", main: "麵食" };
+        let html = '';
+
+        // 遍歷所有分類
+        for (let cat in db) {
+            db[cat].forEach((item, index) => {
+                html += `
+                    <div class="p-item">
+                        <div>
+                            <span class="tag">${catNames[cat]}</span>
+                            <b>${item.n}</b> $${item.p}
+                        </div>
+                        <button class="del-btn" onclick="deleteProduct('${cat}', ${index})">下架</button>
+                    </div>
+                `;
+            });
+        }
+        container.innerHTML = html;
+    }
 </script>
 </body>
 </html>
