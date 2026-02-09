@@ -2,96 +2,224 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>熊冰O - 店長管理系統</title>
     <style>
-        body { font-family: sans-serif; background: #0f172a; color: white; padding: 20px; }
-        .box { background: #1e293b; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #334155; }
-        table { width: 100%; border-collapse: collapse; background: white; color: #333; margin-top: 15px; }
-        th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
-        input { padding: 8px; border-radius: 5px; border: none; margin-bottom: 10px; width: 200px; display: block; }
-        button { cursor: pointer; padding: 10px 20px; border-radius: 8px; border: none; background: #0077b6; color: white; font-weight: bold; }
-        .product-item { display: flex; align-items: center; justify-content: space-between; background: #334155; padding: 10px; margin-bottom: 5px; border-radius: 8px; }
-        .item-img { width: 50px; height: 50px; border-radius: 5px; object-fit: cover; margin-right: 15px; }
+        :root {
+            --primary: #0077b6;
+            --dark: #1e293b;
+            --bg: #f1f5f9;
+            --white: #ffffff;
+            --accent: #fb8500;
+        }
+
+        body {
+            font-family: 'PingFang TC', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            color: #334155;
+        }
+
+        /* 導覽列 */
+        nav {
+            background: var(--dark);
+            color: white;
+            padding: 15px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .container { padding: 30px 5%; max-width: 1200px; margin: 0 auto; }
+
+        /* 區塊卡片 */
+        .card {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+
+        h2 { color: var(--primary); margin-top: 0; display: flex; align-items: center; gap: 10px; }
+
+        /* 表單設計 */
+        .input-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        input, textarea {
+            padding: 12px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .btn-add {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .btn-add:hover { background: #023e8a; }
+
+        /* 訂單表格 */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; border-radius: 15px; overflow: hidden; }
+        th { background: #e2e8f0; color: var(--dark); padding: 15px; text-align: left; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 0.95rem; }
+        .note-cell { color: #64748b; font-size: 0.85rem; max-width: 250px; }
+        .status-tag { background: #dcfce7; color: #166534; padding: 4px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: bold; }
+
+        /* 庫存管理 */
+        .product-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .p-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: #f8fafc;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .p-item img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
     </style>
 </head>
 <body>
-    <h1>🛠 熊冰O 管理系統</h1>
+
+<nav>
+    <div style="display: flex; align-items: center; gap: 10px;">
+        <img src="logo.png" style="width:40px; height:40px; border-radius:50%;" onerror="this.style.display='none'">
+        <h1 style="margin:0; font-size: 1.4rem;">熊冰O 店長後台</h1>
+    </div>
+    <div id="last-update" style="font-size: 0.8rem; opacity: 0.8;">最後更新: 剛剛</div>
+</nav>
+
+<div class="container">
     
-    <div class="box">
-        <h3>✨ 上架新商品</h3>
-        <label>商品名稱：</label>
-        <input type="text" id="p-name" placeholder="例如：手工水餃">
-        <label>價格：</label>
-        <input type="number" id="p-price" placeholder="例如：180">
-        <label>照片連結 (網址)：</label>
-        <input type="text" id="p-img" placeholder="請貼上圖片網址">
-        <button onclick="addProduct()">確認上架商品</button>
+    <div class="card">
+        <h2>📋 最新訂單查詢</h2>
+        <div style="margin-bottom: 15px;">
+            <button class="btn-add" onclick="fetchOrders()">🔄 重新整理訂單</button>
+            <span style="margin-left: 10px; color: #64748b; font-size: 0.9rem;">(資料同步自 Google 試算表)</span>
+        </div>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>時間</th>
+                        <th>顧客姓名</th>
+                        <th>電話</th>
+                        <th>訂購項目</th>
+                        <th>金額</th>
+                        <th>取貨預約與備註</th>
+                    </tr>
+                </thead>
+                <tbody id="order-list">
+                    <tr><td colspan="6" style="text-align:center; padding:30px;">點擊上方按鈕載入訂單...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div class="box">
-        <h3>🧊 現有架上商品 (可下架)</h3>
-        <div id="current-list"></div>
+    <div class="card">
+        <h2>🚀 商品快速上架</h2>
+        <div class="input-group">
+            <input type="text" id="p-name" placeholder="商品名稱 (如：手工水餃)">
+            <input type="number" id="p-price" placeholder="價格 (元)">
+            <input type="text" id="p-img" placeholder="圖片網址 (貼上FB或Imgur連結)">
+        </div>
+        <textarea id="p-desc" placeholder="商品描述 (選填，會顯示在首頁，例如：嚴選豬後腿肉製作...)" rows="2" style="margin-bottom:20px;"></textarea>
+        <button class="btn-add" onclick="addProduct()">確認上架商品</button>
     </div>
 
-    <div class="box">
-        <h3>📥 雲端訂單</h3>
-        <button onclick="fetchOrders()" style="background:#22c55e;">🔄 重新整理訂單</button>
-        <table id="order-table">
-            <thead><tr><th>時間</th><th>顧客</th><th>電話</th><th>品項</th><th>總計</th></tr></thead>
-            <tbody id="order-list"></tbody>
-        </table>
+    <div class="card">
+        <h2>📦 目前架上商品</h2>
+        <div id="inventory" class="product-list"></div>
     </div>
+
+</div>
 
 <script>
-    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzfHhadFwFzg5P005DzlftVNpPFg4HqOxfy3p0ajZwEWAWP_XTinFypj-CFHkFBKJ1E/exec";
+    // 這裡請務必貼上你的 Google 部署網址 (跟 index.html 用同一個)
+    const GOOGLE_URL = "在此貼上你的Google部署長網址";
+
+    // 商品管理邏輯
     let products = JSON.parse(localStorage.getItem('bear_p_list')) || [];
 
     function renderInventory() {
-        const list = document.getElementById('current-list');
-        list.innerHTML = products.map((p, index) => `
-            <div class="product-item">
-                <div style="display:flex; align-items:center;">
-                    <img src="${p.img}" class="item-img" onerror="this.src='https://via.placeholder.com/50'">
-                    <span>${p.name} - $${p.price}</span>
+        const container = document.getElementById('inventory');
+        container.innerHTML = products.map((p, idx) => `
+            <div class="p-item">
+                <img src="${p.img}" onerror="this.src='https://via.placeholder.com/60'">
+                <div style="flex:1">
+                    <div style="font-weight:bold;">${p.name}</div>
+                    <div style="color:var(--primary);">$${p.price}</div>
                 </div>
-                <button onclick="removeProduct(${index})" style="background:#ef4444; padding:5px 10px;">下架</button>
+                <button onclick="deleteProduct(${idx})" style="color:red; border:none; background:none; cursor:pointer;">刪除</button>
             </div>
         `).join('');
+        // 同步存到 localStorage 供顧客端讀取
         localStorage.setItem('bear_p_list', JSON.stringify(products));
     }
 
     function addProduct() {
         const n = document.getElementById('p-name').value;
         const p = document.getElementById('p-price').value;
-        const i = document.getElementById('p-img').value || 'https://via.placeholder.com/200?text=無照片';
-        if(n && p) {
-            products.push({ id: Date.now(), name: n, price: parseInt(p), img: i });
-            renderInventory();
-            alert("已上架！");
-            document.getElementById('p-name').value=''; 
-            document.getElementById('p-price').value='';
-            document.getElementById('p-img').value='';
-        }
+        const i = document.getElementById('p-img').value;
+        const d = document.getElementById('p-desc').value;
+
+        if(!n || !p) return alert("名稱和價格是必填的喔！");
+
+        products.push({ name: n, price: parseInt(p), img: i, desc: d });
+        renderInventory();
+        
+        // 清空輸入框
+        document.getElementById('p-name').value='';
+        document.getElementById('p-price').value='';
+        document.getElementById('p-img').value='';
+        document.getElementById('p-desc').value='';
+        alert("商品已同步到首頁！");
     }
 
-    function removeProduct(idx) {
-        if(confirm("要下架這個商品嗎？")) {
+    function deleteProduct(idx) {
+        if(confirm("確定要下架這項商品嗎？")) {
             products.splice(idx, 1);
             renderInventory();
         }
     }
 
+    // 訂單抓取邏輯
     async function fetchOrders() {
         const list = document.getElementById('order-list');
-        list.innerHTML = "讀取中...";
+        list.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:30px;">連線中，請稍候...</td></tr>';
+        
         try {
-            const res = await fetch(GOOGLE_URL);
-            const data = await res.json();
-            list.innerHTML = data.reverse().map(o => `<tr><td>${o.time}</td><td>${o.name}</td><td><a href="tel:${o.phone}">${o.phone}</a></td><td>${o.items}</td><td>$${o.total}</td></tr>`).join('');
-        } catch(e) { list.innerHTML = "失敗，請檢查網址"; }
+            // 注意：GAS 端必須有 doGet 處理讀取邏輯
+            const response = await fetch(GOOGLE_URL);
+            const data = await response.json();
+            
+            list.innerHTML = data.map(o => `
+                <tr>
+                    <td>${o.timestamp || '無'}</td>
+                    <td><strong>${o.name}</strong></td>
+                    <td><a href="tel:${o.phone}">${o.phone}</a></td>
+                    <td>${o.items}</td>
+                    <td style="color:var(--primary); font-weight:bold;">$${o.total}</td>
+                    <td class="note-cell">${o.note || '無備註'}</td>
+                </tr>
+            `).join('');
+            document.getElementById('last-update').innerText = "最後更新: " + new Date().toLocaleTimeString();
+        } catch (e) {
+            list.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red; padding:30px;">讀取失敗，請確認 Google 試算表權限已開啟</td></tr>';
+        }
     }
 
+    // 初始化
     renderInventory();
 </script>
+
 </body>
 </html>
