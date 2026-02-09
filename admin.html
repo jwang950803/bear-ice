@@ -5,100 +5,183 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>熊冰O - 店長中控台</title>
     <style>
-        body { font-family: 'PingFang TC', sans-serif; background: #f8fafc; padding: 20px; color: #334155; }
-        .container { max-width: 600px; margin: 0 auto; }
-        .card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #e2e8f0; }
-        h2 { margin-top: 0; color: #0f172a; border-left: 5px solid #ef4444; padding-left: 10px; }
+        body { font-family: 'PingFang TC', sans-serif; background: #f1f5f9; padding: 20px; color: #334155; }
+        .container { max-width: 800px; margin: 0 auto; }
         
-        /* 開關樣式 */
-        .switch-box { display: flex; justify-content: space-between; align-items: center; background: #f1f5f9; padding: 15px; border-radius: 10px; }
+        /* 卡片通用樣式 */
+        .card { background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 24px; border: 1px solid #e2e8f0; }
+        h2 { margin-top: 0; color: #0f172a; border-left: 5px solid #ef4444; padding-left: 12px; font-size: 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+        
+        /* 營業開關 */
         .toggle-btn {
-            background: #cbd5e1; color: white; border: none; padding: 10px 20px; border-radius: 50px; font-weight: bold; cursor: pointer; transition: 0.3s;
+            background: #cbd5e1; color: white; border: none; padding: 8px 20px; border-radius: 50px; 
+            font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 1rem;
         }
         .toggle-btn.open { background: #22c55e; }
         .toggle-btn.closed { background: #ef4444; }
 
-        /* 表單 */
-        input, select { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 8px; box-sizing: border-box; }
-        .action-btn { width: 100%; background: #0f172a; color: white; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; }
-        
-        /* 列表 */
-        .p-list { margin-top: 15px; border-top: 1px solid #e2e8f0; }
-        .p-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f1f5f9; align-items: center; }
-        .tag { font-size: 0.75rem; padding: 2px 6px; border-radius: 4px; margin-right: 5px; background: #e0f2fe; color: #0284c7; }
+        /* 上架表單 */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        input, select { width: 100%; padding: 12px; margin-bottom: 12px; border: 1px solid #cbd5e1; border-radius: 8px; box-sizing: border-box; background: #f8fafc; }
+        .action-btn { width: 100%; background: #0f172a; color: white; padding: 14px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; font-size: 1rem; }
+        .action-btn:hover { background: #1e293b; }
+
+        /* --- 訂單卡片樣式 --- */
+        .refresh-btn { background: #3b82f6; color: white; border: none; padding: 8px 15px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; }
+        .order-card { 
+            border-left: 5px solid #3b82f6; background: #fff; margin-bottom: 15px; 
+            padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            animation: fadeIn 0.5s ease;
+        }
+        .order-header { display: flex; justify-content: space-between; color: #64748b; font-size: 0.85rem; margin-bottom: 10px; border-bottom: 1px dashed #e2e8f0; padding-bottom: 8px; }
+        .order-main { display: flex; justify-content: space-between; align-items: flex-start; }
+        .order-info { flex: 1; }
+        .order-name { font-size: 1.2rem; font-weight: 900; color: #0f172a; }
+        .order-phone { color: #0ea5e9; font-weight: bold; text-decoration: none; margin-left: 10px; }
+        .order-items { margin-top: 8px; font-size: 0.95rem; color: #334155; line-height: 1.5; background: #f1f5f9; padding: 10px; border-radius: 8px; }
+        .order-total { font-size: 1.4rem; font-weight: 900; color: #ef4444; text-align: right; min-width: 80px; }
+        .order-note { font-size: 0.85rem; color: #d97706; margin-top: 5px; font-weight: bold; }
+        .loading { text-align: center; color: #94a3b8; padding: 20px; }
+
+        /* 商品列表 */
+        .p-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; align-items: center; }
         .del-btn { color: #ef4444; background: none; border: none; font-weight: bold; cursor: pointer; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
 <div class="container">
+    
     <div class="card">
-        <h2>🟢 營業狀態控制</h2>
-        <div class="switch-box">
-            <span id="status-text">讀取中...</span>
-            <button id="status-btn" class="toggle-btn" onclick="toggleStatus()">切換</button>
-        </div>
-        <p style="font-size:0.8rem; color:#64748b;">* 切換後，請重新整理顧客頁面查看效果。</p>
+        <h2>
+            <span>🟢 營業狀態</span>
+            <button id="status-btn" class="toggle-btn" onclick="toggleStatus()">讀取中...</button>
+        </h2>
+        <div id="status-text" style="color: #64748b; font-size: 0.9rem;">正在檢查連線...</div>
     </div>
 
     <div class="card">
-        <h2>📋 訂單管理</h2>
-        <p>所有顧客訂單皆已同步至 Google 試算表。</p>
-        <a href="https://docs.google.com/spreadsheets/d/你的試算表ID" target="_blank" class="action-btn" style="background:#15803d; text-align:center; display:block; text-decoration:none;">
-            開啟 Google 訂單表格
-        </a>
+        <h2>
+            <span>📋 顧客訂單 (最新 50 筆)</span>
+            <button class="refresh-btn" onclick="fetchOrders()">🔄 刷新</button>
+        </h2>
+        <div id="orders-container">
+            <div class="loading">正在連線至雲端資料庫...</div>
+        </div>
     </div>
 
     <div class="card">
         <h2>📦 商品上架管理</h2>
-        
-        <label>選擇分區</label>
-        <select id="new-cat">
-            <option value="pot">🍢 火鍋料</option>
-            <option value="fry">🍟 炸物</option>
-            <option value="meat">🥩 肉類/海鮮</option>
-            <option value="main">🍜 麵食</option>
-        </select>
-
-        <label>商品名稱</label>
+        <div class="form-grid">
+            <div>
+                <label style="font-size:0.8rem; font-weight:bold;">分區</label>
+                <select id="new-cat">
+                    <option value="pot">🍢 火鍋料</option>
+                    <option value="fry">🍟 炸物</option>
+                    <option value="meat">🥩 肉類/海鮮</option>
+                    <option value="main">🍜 麵食</option>
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.8rem; font-weight:bold;">價格</label>
+                <input type="number" id="new-price" placeholder="例如：100">
+            </div>
+        </div>
+        <label style="font-size:0.8rem; font-weight:bold;">商品名稱</label>
         <input type="text" id="new-name" placeholder="例如：手工大水餃">
-
-        <label>價格</label>
-        <input type="number" id="new-price" placeholder="100">
 
         <button class="action-btn" onclick="addProduct()">確認上架</button>
 
-        <div class="p-list" id="p-list-view"></div>
+        <div style="margin-top: 20px; border-top: 1px solid #e2e8f0;">
+            <p style="font-size:0.9rem; font-weight:bold; color:#64748b; margin-bottom:10px;">現有架上商品 (點擊下架)</p>
+            <div id="p-list-view"></div>
+        </div>
     </div>
+
 </div>
 
 <script>
-    // 預設資料 (與 index.html 保持一致，作為初始值)
+    // ⚠️ 請確認此網址與 index.html 裡的完全一樣
+    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzfHhadFwFzg5P005DzlftVNpPFg4HqOxfy3p0ajZwEWAWP_XTinFypj-CFHkFBKJ1E/exec";
+
+    // 預設商品 (當 localStorage 空時使用)
     const defaultData = {
-        pot: [ {n:"綜合火鍋料(秤斤)", p:50}, {n:"麻糬蛋黃芋丸", p:70}, {n:"綜合燒賣", p:100}, {n:"玉米布丁酥", p:50} ],
-        fry: [ {n:"披薩(一個)", p:20}, {n:"檸檬雞柳", p:50}, {n:"原味雞米花", p:50}, {n:"雞塊", p:50}, {n:"蜜糖小肉豆", p:50}, {n:"黃金脆薯", p:50}, {n:"馬鈴薯條", p:50}, {n:"港式蘿蔔糕", p:50} ],
-        meat: [ {n:"鯛魚片", p:60}, {n:"檸檬蝴蝶腿", p:100}, {n:"九層塔雞腿排", p:100}, {n:"無骨牛小排", p:100}, {n:"醃漬雞腿排", p:100}, {n:"鹹豬肉", p:100}, {n:"黃金翅包飯", p:100}, {n:"雞肉捲", p:100} ],
-        main: [ {n:"蒸煮麵", p:10}, {n:"科學麵(2包)", p:15}, {n:"鍋燒麵(3包)", p:20}, {n:"手工蔥抓餅", p:100}, {n:"烏龍麵", p:100} ]
+        pot: [ {n:"綜合火鍋料(秤斤)", p:50}, {n:"麻糬蛋黃芋丸", p:70} ],
+        fry: [ {n:"披薩(一個)", p:20}, {n:"檸檬雞柳", p:50}, {n:"雞塊", p:50} ],
+        meat: [ {n:"鯛魚片", p:60}, {n:"鹹豬肉", p:100} ],
+        main: [ {n:"蒸煮麵", p:10}, {n:"科學麵(2包)", p:15} ]
     };
 
     let db = JSON.parse(localStorage.getItem('bear_products_db')) || defaultData;
     let isOpen = localStorage.getItem('bear_store_status') !== 'closed';
 
-    // 初始化 UI
-    renderStatus();
-    renderList();
+    // 初始化
+    init();
 
+    function init() {
+        renderStatus();
+        renderList();
+        fetchOrders(); // 自動抓取訂單
+    }
+
+    // --- 訂單讀取功能 ---
+    async function fetchOrders() {
+        const container = document.getElementById('orders-container');
+        container.innerHTML = '<div class="loading">正在同步最新訂單...</div>';
+
+        try {
+            const response = await fetch(GOOGLE_URL);
+            const orders = await response.json();
+
+            if (orders.length === 0) {
+                container.innerHTML = '<div class="loading">目前還沒有訂單喔！</div>';
+                return;
+            }
+
+            container.innerHTML = orders.map(order => {
+                // 時間格式化
+                const date = new Date(order.time);
+                const timeStr = (date.getMonth()+1) + '/' + date.getDate() + ' ' + 
+                                date.getHours().toString().padStart(2,'0') + ':' + 
+                                date.getMinutes().toString().padStart(2,'0');
+
+                return `
+                <div class="order-card">
+                    <div class="order-header">
+                        <span>🕒 下單時間：${timeStr}</span>
+                    </div>
+                    <div class="order-main">
+                        <div class="order-info">
+                            <div>
+                                <span class="order-name">${order.name}</span>
+                                <a href="tel:${order.phone}" class="order-phone">📞 ${order.phone}</a>
+                            </div>
+                            <div class="order-items">${order.items}</div>
+                            ${order.note ? `<div class="order-note">📝 備註：${order.note}</div>` : ''}
+                        </div>
+                        <div class="order-total">$${order.total}</div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+        } catch (error) {
+            container.innerHTML = `<div class="loading" style="color:red;">讀取失敗，請檢查網路或稍後重試。<br><small>${error}</small></div>`;
+        }
+    }
+
+    // --- 營業狀態控制 ---
     function renderStatus() {
         const btn = document.getElementById('status-btn');
         const txt = document.getElementById('status-text');
         if (isOpen) {
-            btn.innerText = "營業中";
-            btn.className = "toggle-btn open";
-            txt.innerText = "目前狀態：🟢 正常接單";
+            btn.innerText = "營業中"; btn.className = "toggle-btn open";
+            txt.innerText = "目前顧客可正常下單";
         } else {
-            btn.innerText = "已公休";
-            btn.className = "toggle-btn closed";
-            txt.innerText = "目前狀態：🔴 暫停接單";
+            btn.innerText = "已公休"; btn.className = "toggle-btn closed";
+            txt.innerText = "網頁已顯示打烊，暫停接單";
         }
     }
 
@@ -108,14 +191,13 @@
         renderStatus();
     }
 
+    // --- 商品上架邏輯 ---
     function addProduct() {
         const cat = document.getElementById('new-cat').value;
         const name = document.getElementById('new-name').value;
         const price = document.getElementById('new-price').value;
 
-        if (!name || !price) return alert("請填寫完整資訊");
-
-        // 確保該分類存在
+        if (!name || !price) return alert("請輸入名稱與價格");
         if (!db[cat]) db[cat] = [];
 
         db[cat].push({ n: name, p: parseInt(price) });
@@ -124,7 +206,6 @@
         document.getElementById('new-name').value = '';
         document.getElementById('new-price').value = '';
         renderList();
-        alert("上架成功！");
     }
 
     function deleteProduct(cat, index) {
@@ -135,27 +216,19 @@
         }
     }
 
-    function saveDb() {
-        localStorage.setItem('bear_products_db', JSON.stringify(db));
-    }
+    function saveDb() { localStorage.setItem('bear_products_db', JSON.stringify(db)); }
 
     function renderList() {
         const container = document.getElementById('p-list-view');
-        const catNames = { pot: "火鍋", fry: "炸物", meat: "肉類", main: "麵食" };
+        const catNames = { pot: "🍢 火鍋", fry: "🍟 炸物", meat: "🥩 肉類", main: "🍜 麵食" };
         let html = '';
-
-        // 遍歷所有分類
         for (let cat in db) {
             db[cat].forEach((item, index) => {
                 html += `
                     <div class="p-item">
-                        <div>
-                            <span class="tag">${catNames[cat]}</span>
-                            <b>${item.n}</b> $${item.p}
-                        </div>
+                        <div><span style="font-size:0.8rem; background:#e0f2fe; color:#0284c7; padding:2px 6px; border-radius:4px; margin-right:5px;">${catNames[cat]}</span> <b>${item.n}</b> $${item.p}</div>
                         <button class="del-btn" onclick="deleteProduct('${cat}', ${index})">下架</button>
-                    </div>
-                `;
+                    </div>`;
             });
         }
         container.innerHTML = html;
