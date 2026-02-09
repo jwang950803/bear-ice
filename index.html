@@ -6,256 +6,150 @@
     <title>熊冰O - 嘉義中埔冷凍食品</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        :root {
-            --primary: #0ea5e9; --dark: #0c4a6e; --accent: #ef4444; --bg: #f8fafc;
-        }
-        body { font-family: 'PingFang TC', system-ui, sans-serif; background: var(--bg); margin: 0; overflow-x: hidden; scroll-behavior: smooth; }
-
-        /* --- 1. 旗艦首頁排版 --- */
+        :root { --dark: #0c4a6e; --accent: #ef4444; --bg: #f8fafc; }
+        body { font-family: 'PingFang TC', sans-serif; background: var(--bg); margin: 0; overflow-x: hidden; scroll-behavior: smooth; }
+        
+        /* 頁面 1: 品牌首頁 */
         #landing-page {
-            min-height: 100vh; width: 100%; position: absolute; top: 0; left: 0; z-index: 5000;
-            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-            transition: transform 0.8s cubic-bezier(0.65, 0, 0.35, 1);
-            display: flex; flex-direction: column; align-items: center; padding-bottom: 50px;
+            height: 100vh; width: 100%; position: fixed; top: 0; left: 0; z-index: 5000;
+            background: linear-gradient(rgba(12,74,110,0.65), rgba(12,74,110,0.85)), url('https://images.unsplash.com/photo-1580913425032-69024f2b1898?auto=format&fit=crop&w=1200&q=80');
+            background-size: cover; background-position: center; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; text-align: center; transition: 0.8s cubic-bezier(0.65, 0, 0.35, 1);
         }
-        #landing-page.hide { transform: translateY(-100vh); }
+        #landing-page.hide { transform: translateY(-100%); }
+        .hero-logo { width: 100px; height: 100px; border-radius: 50%; border: 3px solid white; margin-bottom: 20px; }
+        .main-btn { background: var(--accent); color: white; padding: 16px 50px; border-radius: 50px; font-size: 1.3rem; font-weight: 900; border: none; cursor: pointer; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4); }
 
-        .hero-section {
-            height: 70vh; width: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;
-            background: linear-gradient(rgba(12,74,110,0.7), rgba(12,74,110,0.8)), url('https://images.unsplash.com/photo-1574634534894-89d7576c8259?auto=format&fit=crop&w=1200&q=80');
-            background-size: cover; background-position: center; color: white; text-align: center; clip-path: ellipse(150% 100% at 50% 0%);
-        }
-        .hero-logo { width: 100px; height: 100px; border-radius: 50%; border: 3px solid white; margin-bottom: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
-        .main-shop-btn {
-            background: var(--accent); color: white; padding: 16px 60px; border-radius: 50px;
-            font-size: 1.4rem; font-weight: 900; border: none; cursor: pointer;
-            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4); margin-top: 25px; transition: 0.3s;
-        }
-        .main-shop-btn:hover { transform: scale(1.05); }
-
-        .info-cards-container {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px; width: 90%; max-width: 1000px; margin-top: -50px;
-        }
-        .info-card {
-            background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(10px);
-            padding: 25px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            border: 1px solid white; display: flex; flex-direction: column; gap: 10px;
-        }
-        .info-card h3 { margin: 0; color: var(--dark); display: flex; align-items: center; gap: 8px; }
-
-        /* --- 2. 購物分區導覽 --- */
-        nav { background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); height: 60px; display: flex; align-items: center; padding: 0 5%; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        /* 導覽列與分類 */
+        nav { background: white; padding: 10px 5%; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .status-tag { font-size: 0.8rem; padding: 5px 12px; border-radius: 20px; font-weight: bold; }
         .category-bar { background: white; overflow-x: auto; white-space: nowrap; padding: 12px 5%; position: sticky; top: 60px; z-index: 999; border-bottom: 1px solid #e2e8f0; display: flex; gap: 10px; }
-        .cat-btn { padding: 8px 18px; border-radius: 50px; background: #f1f5f9; color: #64748b; text-decoration: none; font-size: 0.9rem; font-weight: bold; border: 1px solid transparent; }
+        .cat-btn { padding: 8px 18px; border-radius: 50px; background: #f1f5f9; color: #64748b; text-decoration: none; font-size: 0.85rem; font-weight: bold; }
         .cat-btn.active { background: var(--dark); color: white; }
 
-        /* --- 3. 商品與網格 --- */
-        .shop-container { padding: 20px 5% 100px; max-width: 1200px; margin: 0 auto; }
-        .section-title { font-size: 1.5rem; font-weight: 900; color: var(--dark); margin: 40px 0 20px; padding-left: 12px; border-left: 5px solid var(--accent); }
+        /* 商品卡片與拋物線 */
+        section { padding: 30px 5%; max-width: 1200px; margin: 0 auto; }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-        .item-card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.03); border: 1px solid #f1f5f9; transition: 0.3s; position: relative; }
-        .item-card:hover { transform: translateY(-5px); box-shadow: 0 12px 25px rgba(0,0,0,0.08); }
-        .item-card img { width: 100%; height: 120px; object-fit: contain; background: #fcfcfc; padding: 10px; }
-        .add-action { background: var(--dark); color: white; border: none; width: 100%; padding: 12px; font-weight: bold; cursor: pointer; }
+        .card { background: white; border-radius: 20px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); text-align: center; border: 1px solid #f1f5f9; position: relative; }
+        .card img { width: 100%; height: 110px; object-fit: contain; padding: 10px; box-sizing: border-box; }
+        .add-btn { background: var(--dark); color: white; border: none; width: 100%; padding: 12px; font-weight: bold; cursor: pointer; }
+        .fly-dot { width: 25px; height: 25px; background: var(--accent); border-radius: 50%; position: fixed; z-index: 9999; pointer-events: none; }
 
-        /* --- 4. 拋物線動畫元素 --- */
-        .fly-dot {
-            width: 25px; height: 25px; background: var(--accent); border-radius: 50%;
-            position: fixed; z-index: 9999; pointer-events: none;
-            box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
-        }
-
-        /* 購物車與結帳 */
-        #cart-fab { position: fixed; bottom: 30px; right: 30px; background: var(--accent); color: white; width: 65px; height: 65px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; cursor: pointer; z-index: 4000; box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4); }
-        .badge { position: absolute; top: 0; right: 0; background: white; color: var(--accent); font-size: 0.8rem; padding: 2px 8px; border-radius: 10px; font-weight: bold; }
-        #side-panel { position: fixed; top: 0; right: -100%; width: 100%; max-width: 400px; height: 100%; background: white; z-index: 6000; transition: 0.4s; padding: 30px; box-sizing: border-box; box-shadow: -10px 0 30px rgba(0,0,0,0.1); overflow-y: auto; }
+        /* 購物車 */
+        #cart-fab { position: fixed; bottom: 25px; right: 25px; background: var(--accent); color: white; padding: 15px 20px; border-radius: 50px; font-weight: bold; z-index: 4000; cursor: pointer; display: flex; gap: 8px; box-shadow: 0 10px 25px rgba(239,68,68,0.4); }
+        #side-panel { position: fixed; top: 0; right: -100%; width: 100%; max-width: 400px; height: 100%; background: white; z-index: 6000; transition: 0.4s; padding: 25px; box-sizing: border-box; overflow-y: auto; box-shadow: -10px 0 30px rgba(0,0,0,0.1); }
         #side-panel.open { right: 0; }
         
-        input, select, textarea { width: 100%; padding: 14px; margin-bottom: 12px; border: 1px solid #e2e8f0; border-radius: 12px; }
+        input, textarea { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
 <div id="landing-page">
-    <div class="hero-section">
-        <img src="logo.png" class="hero-logo animate__animated animate__zoomIn" onerror="this.src='https://ui-avatars.com/api/?name=熊冰O&background=ef4444&color=fff'">
-        <h1 class="animate__animated animate__fadeInDown">熊冰O 冷凍食品</h1>
-        <p class="animate__animated animate__fadeIn">中埔在地嚴選．批發零售首選</p>
-        <button class="main-shop-btn animate__animated animate__pulse animate__infinite" onclick="goToShop()">🛒 開始選購</button>
-    </div>
-
-    <div class="info-cards-container">
-        <div class="info-card">
-            <h3>⏰ 營業資訊</h3>
-            <p style="font-size: 0.95rem; color: #475569; line-height: 1.6;">
-                週一至週日：08:00 - 20:00<br>
-                (建議到店前可先電話確認或私訊)
-            </p>
-        </div>
-        <div class="info-card">
-            <h3>📍 店址 & 導航</h3>
-            <p style="font-size: 0.9rem; margin-bottom: 10px;">嘉義縣中埔鄉永樂新村248號</p>
-            <a href="https://maps.app.goo.gl/YourMapLink" target="_blank" style="color: var(--primary); font-weight: bold; text-decoration: none;">➜ 使用 Google 地圖導航</a>
-        </div>
-    </div>
+    <img src="logo.png" class="hero-logo animate__animated animate__zoomIn" onerror="this.src='https://ui-avatars.com/api/?name=熊冰O&background=ef4444&color=fff'">
+    <h1 class="animate__animated animate__fadeInDown">熊冰O 冷凍食品</h1>
+    <p class="animate__animated animate__fadeIn">中埔在地經營．嚴選批發價</p>
+    <button class="main-btn" onclick="enterShop()">🛒 開始選購</button>
 </div>
 
 <nav>
-    <span style="font-weight: 900; color: var(--dark); font-size: 1.2rem;">熊冰O <small style="font-weight: normal; font-size: 0.7rem; background: #f1f5f9; padding: 2px 8px; border-radius: 10px;">購物中</small></span>
+    <div style="display:flex; align-items:center; gap:10px;"><span style="font-weight:900; color:var(--dark);">熊冰O</span></div>
+    <div id="status-tag" class="status-tag">讀取中...</div>
 </nav>
 
-<div class="category-bar" id="cat-bar">
+<div class="category-bar">
     <a href="#cat-pot" class="cat-btn active">火鍋料</a>
-    <a href="#cat-fry" class="cat-btn">美味炸物</a>
+    <a href="#cat-fry" class="cat-btn">點心炸物</a>
     <a href="#cat-meat" class="cat-btn">海鮮肉類</a>
     <a href="#cat-main" class="cat-btn">精選麵食</a>
 </div>
 
-<div class="shop-container">
-    <div id="cat-pot" class="section-title">🍢 火鍋料 / 秤斤小點</div>
-    <div class="grid" id="grid-pot"></div>
+<section id="cat-pot"><div class="grid" id="grid-pot"></div></section>
+<section id="cat-fry"><div class="grid" id="grid-fry"></div></section>
+<section id="cat-meat"><div class="grid" id="grid-meat"></div></section>
+<section id="cat-main"><div class="grid" id="grid-main"></div></section>
 
-    <div id="cat-fry" class="section-title">🍟 熱門點心炸物</div>
-    <div class="grid" id="grid-fry"></div>
-
-    <div id="cat-meat" class="section-title">🥩 海鮮與各式肉類</div>
-    <div class="grid" id="grid-meat"></div>
-
-    <div id="cat-main" class="section-title">🍜 精選主食麵類</div>
-    <div class="grid" id="grid-main"></div>
-</div>
-
-<div id="cart-fab" onclick="toggleSide()">
-    🛒 <div class="badge" id="cart-count">0</div>
-</div>
+<div id="cart-fab" onclick="toggleSide()">🛒 結帳 (<span id="count">0</span>)</div>
 
 <div id="side-panel">
-    <div style="display:flex; justify-content:space-between; align-items:center;">
-        <h2 style="color:var(--dark);">預約清單</h2>
-        <button onclick="toggleSide()" style="border:none; background:none; font-size:2rem; cursor:pointer;">&times;</button>
-    </div>
-    <div id="cart-list" style="margin:20px 0; border-top:1px solid #eee; padding-top:20px;"></div>
-    <div style="text-align:right; font-size:1.4rem; font-weight:bold; color:var(--accent);">總計: $<span id="cart-total">0</span></div>
-    
-    <div style="margin-top:30px;">
-        <input type="text" id="user-name" placeholder="訂購人姓名">
-        <input type="tel" id="user-phone" placeholder="聯絡電話">
-        <label style="font-size:0.8rem; color:#64748b;">📅 預計取貨日期</label>
-        <input type="date" id="user-date">
-        <textarea id="user-note" rows="3" placeholder="其他備註 (例如：分裝需求)"></textarea>
-        <button class="add-action" style="background:var(--accent); padding:15px; border-radius:15px; font-size:1.1rem;" onclick="doSubmit()">確認送出預約</button>
-    </div>
+    <div style="display:flex; justify-content:space-between; align-items:center;"><h3>我的訂單</h3><button onclick="toggleSide()" style="border:none; background:none; font-size:1.5rem;">×</button></div>
+    <div id="cart-list" style="margin:20px 0;"></div>
+    <div style="text-align:right; font-weight:bold; color:var(--accent);">總計: $<span id="total">0</span></div>
+    <br>
+    <input type="text" id="cust-name" placeholder="訂購人姓名">
+    <input type="tel" id="cust-phone" placeholder="電話">
+    <input type="date" id="pickup-date">
+    <textarea id="note" placeholder="備註"></textarea>
+    <button class="add-btn" style="background:var(--accent); border-radius:10px;" onclick="submitOrder()">確認送出預約</button>
 </div>
 
 <script>
-    // --- 商品資料庫 ---
+    const GOOGLE_URL = "https://script.google.com/macros/s/AKfycbzfHhadFwFzg5P005DzlftVNpPFg4HqOxfy3p0ajZwEWAWP_XTinFypj-CFHkFBKJ1E/exec";
+    
+    // 預設分類商品
     const db = {
-        pot: [ {n:"綜合火鍋料(秤斤)", p:50}, {n:"麻糬蛋黃芋丸", p:70}, {n:"綜合燒賣", p:100}, {n:"玉米布丁酥", p:50} ],
-        fry: [ {n:"披薩(一個)", p:20}, {n:"檸檬雞柳", p:50}, {n:"原味雞米花", p:50}, {n:"雞塊", p:50}, {n:"蜜糖小肉豆", p:50}, {n:"黃金脆薯", p:50}, {n:"馬鈴薯條", p:50}, {n:"蘿蔔糕", p:50} ],
-        meat: [ {n:"鯛魚片", p:60}, {n:"蝴蝶腿", p:100}, {n:"九層塔雞腿排", p:100}, {n:"牛小排", p:100}, {n:"鹹豬肉", p:100}, {n:"翅包飯", p:100} ],
-        main: [ {n:"蒸煮麵", p:10}, {n:"科學麵(2包)", p:15}, {n:"鍋燒麵(3包)", p:20}, {n:"手工蔥抓餅", p:100}, {n:"烏龍麵", p:100} ]
+        pot: [ {n:"綜合火鍋料(秤斤)", p:50}, {n:"麻糬蛋黃芋丸", p:70} ],
+        fry: [ {n:"披薩(一個)", p:20}, {n:"雞塊", p:50}, {n:"蘿蔔糕", p:50} ],
+        meat: [ {n:"鯛魚片", p:60}, {n:"鹹豬肉", p:100} ],
+        main: [ {n:"蒸煮麵", p:10}, {n:"科學麵", p:15}, {n:"手工蔥抓餅", p:100} ]
     };
 
     let cart = [];
 
-    // --- 切換至購物頁 ---
-    function goToShop() {
-        document.getElementById('landing-page').classList.add('hide');
-        window.scrollTo(0,0);
-    }
-
-    // --- 渲染商品 ---
-    function render(key, targetId) {
-        const container = document.getElementById(targetId);
-        container.innerHTML = db[key].map((item, i) => `
-            <div class="item-card">
-                <img src="logo.png" onerror="this.src='https://ui-avatars.com/api/?name=${item.n}&background=f8fafc&color=0c4a6e'">
-                <div style="padding:12px; text-align:center;">
-                    <div style="font-weight:bold; font-size:0.9rem; height:2.4em; overflow:hidden;">${item.n}</div>
-                    <div style="color:var(--accent); font-weight:900; margin:5px 0;">$${item.p}</div>
-                </div>
-                <button class="add-action" onclick="handleAddToCart(event, '${item.n}', ${item.p})">加入購物車</button>
+    function enterShop() { document.getElementById('landing-page').classList.add('hide'); window.scrollTo(0,0); }
+    
+    function render(key) {
+        document.getElementById('grid-' + key).innerHTML = db[key].map(item => `
+            <div class="card">
+                <img src="logo.png" onerror="this.src='https://ui-avatars.com/api/?name=${item.n}&background=f1f5f9&color=0c4a6e'">
+                <div style="padding:10px;"><div>${item.n}</div><div style="color:var(--accent); font-weight:bold;">$${item.p}</div></div>
+                <button class="add-btn" onclick="addToCart(event, '${item.n}', ${item.p})">加入購物車</button>
             </div>
         `).join('');
     }
 
-    // --- 拋物線動畫主邏輯 ---
-    function handleAddToCart(e, name, price) {
-        // 1. 執行拋物線
-        const startX = e.clientX;
-        const startY = e.clientY;
-        const cartEl = document.getElementById('cart-fab');
-        const endRect = cartEl.getBoundingClientRect();
-        const endX = endRect.left + endRect.width / 2;
-        const endY = endRect.top + endRect.height / 2;
-
+    function addToCart(e, n, p) {
+        // 拋物線動畫
         const dot = document.createElement('div');
         dot.className = 'fly-dot';
-        dot.style.left = startX + 'px';
-        dot.style.top = startY + 'px';
+        dot.style.left = e.clientX + 'px'; dot.style.top = e.clientY + 'px';
         document.body.appendChild(dot);
-
-        // 使用簡單物理公式模擬
-        let currentX = startX;
-        let currentY = startY;
-        const duration = 600; 
-        const startTime = Date.now();
-
-        function animate() {
-            const now = Date.now();
-            const progress = (now - startTime) / duration;
-
-            if (progress < 1) {
-                currentX = startX + (endX - startX) * progress;
-                // 這裡的拋物線：減去一個 sin 函數產生的弧度
-                currentY = startY + (endY - startY) * progress - 150 * Math.sin(Math.PI * progress);
-                dot.style.left = currentX + 'px';
-                dot.style.top = currentY + 'px';
-                dot.style.transform = `scale(${1 - 0.5 * progress})`;
-                requestAnimationFrame(animate);
-            } else {
-                dot.remove();
-                // 2. 加入購物車數據
-                cart.push({name, price});
-                updateCart();
-                // 購物車圖示震動一下
-                cartEl.classList.add('animate__animated', 'animate__rubberBand');
-                setTimeout(() => cartEl.classList.remove('animate__animated', 'animate__rubberBand'), 500);
-            }
-        }
-        animate();
+        const rect = document.getElementById('cart-fab').getBoundingClientRect();
+        dot.animate([{ transform: `translate(0, 0) scale(1)` }, { transform: `translate(${rect.left - e.clientX}px, ${rect.top - e.clientY}px) scale(0.1)` }], { duration: 600 });
+        setTimeout(() => { dot.remove(); cart.push({name:n, price:p}); updateUI(); }, 500);
     }
 
-    function updateCart() {
-        document.getElementById('cart-count').innerText = cart.length;
-        document.getElementById('cart-total').innerText = cart.reduce((s,i)=>s+i.price,0);
-        document.getElementById('cart-list').innerHTML = cart.map((item, idx) => `
-            <div style="display:flex; justify-content:space-between; margin-bottom:12px; align-items:center;">
-                <span style="font-size:0.95rem;">${item.name}</span>
-                <span style="font-weight:bold;">$${item.price} <button onclick="removeFromCart(${idx})" style="border:none; background:none; color:#cbd5e1; cursor:pointer; font-size:1.2rem; margin-left:10px;">&times;</button></span>
-            </div>
-        `).join('');
+    function updateUI() {
+        document.getElementById('count').innerText = cart.length;
+        document.getElementById('total').innerText = cart.reduce((s,i)=>s+i.price,0);
+        document.getElementById('cart-list').innerHTML = cart.map((i,idx)=>`<div>${i.name} - $${i.price} <button onclick="cart.splice(${idx},1);updateUI()">×</button></div>`).join('');
     }
 
-    function removeFromCart(idx) { cart.splice(idx,1); updateCart(); }
     function toggleSide() { document.getElementById('side-panel').classList.toggle('open'); }
 
-    // --- 初始化 ---
-    render('pot', 'grid-pot');
-    render('fry', 'grid-fry');
-    render('meat', 'grid-meat');
-    render('main', 'grid-main');
-    document.getElementById('user-date').min = new Date().toISOString().split('T')[0];
+    async function submitOrder() {
+        const n = document.getElementById('cust-name').value;
+        const p = document.getElementById('cust-phone').value;
+        const d = document.getElementById('pickup-date').value;
+        if(!n || !p || !d || cart.length === 0) return alert("請填寫資料！");
 
-    // 分類按鈕點擊效果
-    document.querySelectorAll('.cat-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-        });
-    });
+        localStorage.setItem('bear_name', n); localStorage.setItem('bear_phone', p);
+
+        try {
+            await fetch(`${GOOGLE_URL}?name=${encodeURIComponent(n)}&phone=${encodeURIComponent(p)}&items=${encodeURIComponent(cart.map(i=>i.name).join(','))}&total=${cart.reduce((s,i)=>s+i.price,0)}&note=${encodeURIComponent(d+' | '+document.getElementById('note').value)}`, {method:'POST', mode:'no-cors'});
+            alert("預約成功！"); cart = []; updateUI(); toggleSide();
+        } catch(e) { alert("失敗，請撥打 05-2393005"); }
+    }
+
+    // 初始化讀取資訊與狀態
+    window.onload = () => {
+        const isOpen = localStorage.getItem('bear_store_open') !== 'false';
+        const tag = document.getElementById('status-tag');
+        tag.innerText = isOpen ? "● 正常營業中" : "● 公休中";
+        tag.style.background = isOpen ? "#dcfce7" : "#fee2e2";
+        render('pot'); render('fry'); render('meat'); render('main');
+        document.getElementById('cust-name').value = localStorage.getItem('bear_name') || '';
+        document.getElementById('cust-phone').value = localStorage.getItem('bear_phone') || '';
+    };
 </script>
-
 </body>
 </html>
