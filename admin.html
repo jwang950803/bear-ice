@@ -3,158 +3,49 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>熊冰O - 旗艦店長管理後台</title>
+    <title>熊冰O - 店長控制台</title>
     <style>
-        :root { --dark: #0c4a6e; --accent: #ef4444; --bg: #f8fafc; }
-        body { font-family: 'PingFang TC', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #334155; }
-        .admin-container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        h1 { color: var(--dark); border-left: 5px solid var(--accent); padding-left: 15px; font-size: 1.5rem; }
-        
-        /* 營業狀態開關 */
-        .status-box { background: #f1f5f9; padding: 20px; border-radius: 15px; margin-bottom: 25px; display: flex; align-items: center; justify-content: space-between; }
-        .switch { position: relative; display: inline-block; width: 60px; height: 34px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 26px; width: 26px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #22c55e; }
-        input:checked + .slider:before { transform: translateX(26px); }
-
-        /* 表單樣式 */
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9rem; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; }
-        .submit-btn { background: var(--dark); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        
-        /* 商品列表 */
-        .product-list { margin-top: 30px; }
-        .product-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f1f5f9; }
-        .p-category { font-size: 0.7rem; background: #e0f2fe; color: #0369a1; padding: 2px 8px; border-radius: 5px; margin-right: 10px; }
-        .del-btn { color: var(--accent); cursor: pointer; font-weight: bold; border: none; background: none; }
+        body { font-family: sans-serif; background: #f8fafc; padding: 20px; }
+        .box { background: white; padding: 25px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); max-width: 600px; margin: 0 auto; }
+        .btn { background: #0c4a6e; color: white; border: none; padding: 12px; width: 100%; border-radius: 10px; cursor: pointer; margin-top: 10px; font-weight: bold; }
+        .status-on { color: #22c55e; font-weight: bold; }
+        .status-off { color: #ef4444; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="admin-container">
-    <h1>🐻 熊冰O 店長控制面板</h1>
-
-    <div class="status-box">
-        <div>
-            <strong style="font-size: 1.1rem;">網頁營業狀態</strong><br>
-            <span id="status-text" style="color: #64748b; font-size: 0.85rem;">目前狀態：載入中...</span>
-        </div>
-        <label class="switch">
-            <input type="checkbox" id="store-switch" onchange="toggleStoreStatus()">
-            <span class="slider"></span>
-        </label>
+<div class="box">
+    <h2>🐻 熊冰O 管理後台</h2>
+    
+    <div style="background:#f1f5f9; padding:15px; border-radius:10px; margin-bottom:20px;">
+        <div>營業狀態：<span id="st-text">載入中...</span></div>
+        <button class="btn" id="toggle-btn" onclick="toggle()">切換營業狀態</button>
     </div>
 
-    <div style="background: #fff; border: 1px solid #e2e8f0; padding: 20px; border-radius: 15px;">
-        <h3 style="margin-top:0;">✨ 新增/更新商品</h3>
-        <div class="form-group">
-            <label>商品名稱</label>
-            <input type="text" id="p-name" placeholder="例如：手工水餃">
-        </div>
-        <div class="form-group">
-            <label>顯示分區</label>
-            <select id="p-cat">
-                <option value="pot">🍢 火鍋料 / 秤斤小點</option>
-                <option value="fry">🍟 熱門點心炸物</option>
-                <option value="meat">🥩 海鮮與各式肉類</option>
-                <option value="main">🍜 精選主食麵類</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <label>單價 (元)</label>
-            <input type="number" id="p-price" placeholder="例如：180">
-        </div>
-        <button class="submit-btn" onclick="saveProduct()">確認並上架</button>
-    </div>
-
-    <div class="product-list">
-        <h3>📦 現有商品管理</h3>
-        <div id="list-container"></div>
+    <div style="border-top:1px solid #eee; padding-top:20px;">
+        <h3>📋 訂單紀錄管理</h3>
+        <p style="font-size:0.8rem; color:#64748b;">最新的顧客預約會即時存入您的 Google 試算表。</p>
+        <button class="btn" style="background:#107c10;" onclick="window.open('https://docs.google.com/spreadsheets/d/你的試算表ID')">📗 開啟 Google 訂單試算表</button>
     </div>
 </div>
 
 <script>
-    // 初始化資料
-    let products = JSON.parse(localStorage.getItem('bear_p_list')) || [];
-    let isOpen = localStorage.getItem('bear_store_open') !== 'false'; // 預設開啟
+    let isOpen = localStorage.getItem('bear_store_open') !== 'false';
 
-    function init() {
-        // 設定開關狀態
-        document.getElementById('store-switch').checked = isOpen;
-        updateStatusText();
-        renderList();
+    function update() {
+        const txt = document.getElementById('st-text');
+        txt.innerText = isOpen ? "🟢 營業中" : "🔴 公休中";
+        txt.className = isOpen ? "status-on" : "status-off";
     }
 
-    function updateStatusText() {
-        const text = document.getElementById('status-text');
-        if (isOpen) {
-            text.innerText = "目前狀態：🟢 正常營業中 (顧客可下單)";
-            text.style.color = "#22c55e";
-        } else {
-            text.innerText = "目前狀態：🔴 公休中 (顧客無法點擊下單)";
-            text.style.color = "#ef4444";
-        }
-    }
-
-    function toggleStoreStatus() {
-        isOpen = document.getElementById('store-switch').checked;
+    function toggle() {
+        isOpen = !isOpen;
         localStorage.setItem('bear_store_open', isOpen);
-        updateStatusText();
-        alert(isOpen ? "店鋪已開啟！" : "店鋪已設為公休狀態。");
+        update();
+        alert("已更新營業狀態，請記得同步告知顧客！");
     }
 
-    function saveProduct() {
-        const name = document.getElementById('p-name').value;
-        const cat = document.getElementById('p-cat').value;
-        const price = document.getElementById('p-price').value;
-
-        if (!name || !price) return alert("請填寫名稱與價格");
-
-        // 如果名稱重複則覆蓋
-        const index = products.findIndex(p => p.name === name);
-        if (index > -1) {
-            products[index] = { name, cat, price: parseInt(price) };
-        } else {
-            products.push({ name, cat, price: parseInt(price) });
-        }
-
-        localStorage.setItem('bear_p_list', JSON.stringify(products));
-        alert("商品已同步！");
-        renderList();
-        // 清空輸入
-        document.getElementById('p-name').value = '';
-        document.getElementById('p-price').value = '';
-    }
-
-    function renderList() {
-        const container = document.getElementById('list-container');
-        const catNames = { pot: "火鍋料", fry: "炸物", meat: "肉類", main: "麵食" };
-        
-        container.innerHTML = products.map((p, idx) => `
-            <div class="product-item">
-                <div>
-                    <span class="p-category">${catNames[p.cat] || '一般'}</span>
-                    <strong>${p.name}</strong> - $${p.price}
-                </div>
-                <button class="del-btn" onclick="deleteProduct(${idx})">刪除</button>
-            </div>
-        `).reverse().join('');
-    }
-
-    function deleteProduct(idx) {
-        if (confirm("確定要下架此商品嗎？")) {
-            // 注意：因為 renderList 是反轉顯示，索引要處理
-            const realIdx = products.length - 1 - idx;
-            products.splice(realIdx, 1);
-            localStorage.setItem('bear_p_list', JSON.stringify(products));
-            renderList();
-        }
-    }
-
-    init();
+    update();
 </script>
 </body>
 </html>
